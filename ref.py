@@ -97,6 +97,8 @@ class TicTacToeEnv(gym.Env):
         else:
             # 游戏继续
             reward = 0
+            self.result = 0
+            self.done = False
             # 切换玩家
             self.current_player = 2 if self.current_player == 1 else 1
 
