@@ -52,7 +52,7 @@ class TicTacToeEnv(gym.Env):
         # 初始化棋盘
         self.board = np.zeros((3, 3), dtype=np.int8)
         # 设置当前玩家，1 为 AI，2 为 玩家
-        self.current_player = 1
+        self.current_player = 2
         # 游戏是否结束
         self.done = False
         # 结果：0-继续，1-玩家1胜利，2-玩家2胜利，3-平局，4-非法动作
@@ -287,7 +287,7 @@ def main():
     env.reset()
     env.render()
 
-    player = 1  # 1 为 AI，2 为 对手（玩家）
+    player = 2  # 1 为 AI，2 为 对手（玩家）
 
     while True:
         for event in pygame.event.get():
@@ -327,22 +327,20 @@ def main():
         if player == 1 and not env.done:
             action = mcts(env, iterations=1000)
             env.step(action)
-
-            if env.done:
-                if env.result == 1:
-                    show_result(env.screen, "AI Wins!")
-                elif env.result == 2:
-                    show_result(env.screen, "You Win!")
-                elif env.result == 3:
-                    show_result(env.screen, "Draw!")
-                elif env.result == 4:
-                    show_result(env.screen, "Invalid Move!")
-                env.reset()
-                env.render()
-                player = 1  # 重置为 AI
-                continue
-
+            env.render()
             player = 2  # 切换到 玩家
+
+        if env.done:
+            if env.result == 1:
+                show_result(env.screen, "AI Wins!")
+            elif env.result == 2:
+                show_result(env.screen, "You Win!")
+            elif env.result == 3:
+                show_result(env.screen, "Draw!")
+            elif env.result == 4:
+                show_result(env.screen, "Invalid Move!")
+            env.reset()
+            env.render()
 
         pygame.display.update()
 
