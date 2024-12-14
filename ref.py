@@ -83,8 +83,12 @@ class TicTacToeEnv(gym.Env):
         # 检查是否有胜利
         if self.check_winner(self.current_player):
             self.done = True
-            self.result = self.current_player
-            reward = 1
+            if self.current_player == 1:
+                reward = 1
+                self.result = 1
+            else:
+                reward = -10
+                self.result = 2
         elif not np.any(self.board == 0):
             # 平局
             self.done = True
@@ -162,6 +166,12 @@ class MCTSNode:
             for child in self.children
         ]
         return self.children[np.argmax(choices_weights)]
+    
+    def print_tree(self, depth=0):
+        total_visits = sum([child.visits for child in self.children])
+        print('  ' * depth + f"Total Visits: {total_visits}")
+        for child in self.children:
+            print('  ' * depth + f"Action: {child.action}, Reward: {child.reward}, Visits: {child.visits}")
 
 def get_available_actions(board):
     return [i for i in range(9) if board[i // 3, i % 3] == 0]
@@ -180,7 +190,7 @@ def simulate(env):
             return env.result
     return env.result
 
-def mcts(env, iterations=1000):
+def mcts(env, iterations=10000):
     root_state = {
         'board': deepcopy(env.board),
         'current_player': env.current_player,
@@ -231,8 +241,12 @@ def mcts(env, iterations=1000):
             if simulation_result == 0:
                 # 平局不增加奖励
                 pass
-            elif simulation_result == node.state['current_player']:
-                node.reward += 1
+            else:
+                # AI 胜利
+                if simulation_result == 1:
+                    node.reward += 1
+                else:
+                    node.reward -= 10
             node = node.parent
 
     # 选择访问次数最多的子节点
@@ -240,6 +254,9 @@ def mcts(env, iterations=1000):
         best_move = sorted(root.children, key=lambda c: c.visits, reverse=True)[0].action
     else:
         best_move = random.choice(get_available_actions(env.board))
+    
+    # 打印 MCTS 树
+    root.print_tree()
     return best_move
 
 # -------------------------
@@ -268,7 +285,7 @@ def main():
     env.reset()
     env.render()
 
-    player = 2  # 1 为 AI，2 为 对手（玩家）
+    player = 1  # 1 为 AI，2 为 对手（玩家）
 
     while True:
         for event in pygame.event.get():
